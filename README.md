@@ -96,3 +96,4 @@ story-writer-graph/
 
 ## ⚠️ Important
 Never commit your `.env` file. It is listed in `.gitignore`. Only `.env.example` with a placeholder goes to GitHub.
+ 
