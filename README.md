@@ -1,169 +1,98 @@
-# Mental Wellness Practice Suggester - Learn LangGraph Step by Step
+# Story Writer Graph 📖
+**Powered by LangGraph + OpenAI**
 
-A beginner-friendly LangGraph project that suggests personalized calming
-practices based on how a user is feeling.
-
-The project demonstrates a clear LangGraph pattern:
-
-```text
-[User Feeling]
-      |
-      v
-understand_mood
-      |
-      +--> suggest_breathing ----+
-      +--> suggest_mindfulness --+--> pick_best_practice
-      +--> suggest_movement -----+          |
-                                         conditional
-                                      /              \
-                              quick_practice     deep_practice
-                                      |              |
-                                     END            END
-```
+Turn any one-line story idea into a complete, polished story using a parallel LangGraph pipeline.
 
 ---
 
-## What This Project Does
+## What It Does
 
-A user enters a feeling such as:
+The Story Writer Graph takes a user's story idea and runs it through a multi-node LangGraph pipeline:
+START
+|
++---> create_characters --------+
+|                               |
++---> create_plot_outline ------+---> decide_story_length
+|                               |         |
++---> create_setting_and_tone --+    (conditional)
+/          
+short?         expanded?
+|               |
+write_short_story   write_expanded_story
+|               |
+END             END
 
-- `I feel stressed before my exam`
-- `I cannot sleep and my mind is racing`
-- `I feel anxious and overwhelmed`
-
-The graph then:
-
-1. Understands the user mood.
-2. Runs three specialist suggestion nodes in parallel:
-   - breathing specialist
-   - mindfulness specialist
-   - gentle movement specialist
-3. Uses a decision node to choose whether the user needs:
-   - a quick practice under 5 minutes, or
-   - a deeper 10-15 minute session
-4. Routes to the correct final node.
-5. Prints the personalized wellness practice and message log.
-
----
-
-## LangGraph Concepts Covered
-
-| Concept | Where It Appears |
-|---|---|
-| State | `WellnessState` Pydantic model |
-| Nodes | `understand_mood`, `suggest_breathing`, `suggest_mindfulness`, `suggest_movement`, `pick_best_practice`, `quick_practice`, `deep_practice` |
-| Parallel execution | Three suggestion nodes run after `understand_mood` |
-| Fan-in | All three specialist suggestions flow into `pick_best_practice` |
-| Conditional edges | `route_after_decision` sends the graph to quick or deep practice |
-| Final output | `quick_practice` or `deep_practice` |
-| Message accumulation | `messages: Annotated[list, operator.add]` |
+| Node | Role |
+|------|------|
+| `create_characters` | Designs 2-3 main characters with names, personalities, and roles |
+| `create_plot_outline` | Builds beginning, middle, and ending of the story |
+| `create_setting_and_tone` | Defines setting, mood, and genre |
+| `decide_story_length` | Reads all 3 outputs and decides short vs expanded |
+| `write_short_story` | Writes a focused 300-400 word story |
+| `write_expanded_story` | Writes a rich 600-900 word multi-scene story |
 
 ---
 
-## Project Files
+## LangGraph Concepts Used
 
-```text
-mental_wellness_graph.py   Main LangGraph project
-architecture.md            Architecture explanation
-architecture.drawio        Diagram source file
-requirements.txt           Python dependencies
-.env.example               Example environment file
-.gitignore                 Ignored local files
-```
+| Concept | Where |
+|---------|-------|
+| Pydantic State | `StoryState` class holds all data flowing through the graph |
+| Parallel Nodes | 3 specialist nodes run at the same time from START |
+| Fan-in | All 3 feed into `decide_story_length` |
+| Conditional Edges | Routes to short or expanded story based on decision |
+| StateGraph | Wires all nodes and edges together |
 
 ---
 
-## Setup
+## Setup & Run
 
-### 1. Create and activate a virtual environment
-
-```powershell
-python -m venv venv
-venv\Scripts\activate
-```
-
-On macOS/Linux:
-
+### 1. Clone the repo
 ```bash
-python -m venv venv
+git clone https://github.com/anivedmishra/LangGraph_Sample_Project_1.git
+cd story-writer-graph
+```
+
+### 2. Create and activate a virtual environment
+```bash
+python3 -m venv venv
 source venv/bin/activate
 ```
 
-### 2. Install dependencies
-
-```powershell
+### 3. Install dependencies
+```bash
 pip install -r requirements.txt
 ```
 
-### 3. Configure your OpenAI API key
+### 4. Add your OpenAI API key
+```bash
+cp .env.example .env
+```
+Open `.env` and replace the placeholder with your real key:
+OPENAI_API_KEY=sk-your-real-key-here
 
-```powershell
-copy .env.example .env
+### 5. Run the graph
+```bash
+python3 story_writer_graph.py
 ```
 
-Edit `.env` and add your API key:
+### Example
+Your story idea: > a robot who learns to feel emotions
 
-```text
-OPENAI_API_KEY=sk-...
-```
-
-Never commit your real `.env` file.
-
-### 4. Run the project
-
-```powershell
-python mental_wellness_graph.py
-```
+The graph will run all 3 specialist nodes in parallel, decide on story length, then print your complete story.
 
 ---
 
-## Expected Flow
-
-Example input:
-
-```text
-I feel anxious and overwhelmed because I have too much work.
-```
-
-The graph will:
-
-1. Acknowledge the feeling.
-2. Generate a breathing technique.
-3. Generate a mindfulness or grounding exercise.
-4. Generate a gentle movement suggestion.
-5. Decide whether the user needs a quick or deeper practice.
-6. Print the final personalized practice.
-7. Print the message log showing which nodes executed.
+## Project Structure
+story-writer-graph/
+├── story_writer_graph.py   # Main LangGraph file
+├── requirements.txt        # Python dependencies
+├── .env.example            # API key template (never commit .env)
+├── .gitignore              # Keeps secrets out of GitHub
+├── archive/                # Reference files from original repo
+└── README.md               # This file
 
 ---
 
-## Code Walkthrough
-
-| Step | What Happens | File |
-|---|---|---|
-| 1 | Define `WellnessState` | `mental_wellness_graph.py` |
-| 2 | Initialize `ChatOpenAI` | `mental_wellness_graph.py` |
-| 3 | Define graph node functions | `mental_wellness_graph.py` |
-| 4 | Define `route_after_decision` | `mental_wellness_graph.py` |
-| 5 | Add nodes and edges to `StateGraph` | `mental_wellness_graph.py` |
-| 6 | Compile graph as `app` | `mental_wellness_graph.py` |
-| 7 | Run with `run_wellness_check()` | `mental_wellness_graph.py` |
-
----
-
-## Important Note
-
-This is a learning project, not a medical or therapy tool. The output is meant
-for general wellness practice suggestions only. For crisis situations, medical
-concerns, self-harm thoughts, or severe distress, users should contact local
-emergency services or a qualified mental health professional.
-
----
-
-## Key Takeaways
-
-1. State holds the data that travels through the graph.
-2. Nodes are normal Python functions that read state and return updates.
-3. Parallel execution happens when one node connects to multiple next nodes.
-4. Fan-in happens when multiple nodes connect into one later node.
-5. Conditional edges let the graph choose the next path at runtime.
+## ⚠️ Important
+Never commit your `.env` file. It is listed in `.gitignore`. Only `.env.example` with a placeholder goes to GitHub.
